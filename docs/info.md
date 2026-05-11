@@ -9,12 +9,12 @@ You can also include images in this folder and reference them in the markdown. E
 
 ## How it works
 
-Explain how your project works
+This is a Finite State Machine (FSM) that utilizes an instantiated module of the "CLK Frequency Divider" by Ramón Sarmiento to perform internal counting for a traffic light control system.
 
 ## How to test
 
-Explain how to use your project
+Set the first input to "1" and await the activation of the Red light. It will remain active for 30 seconds, provided the correct frequency is employed. Afterward, it will transition to the Green state within 3 seconds, remaining in this state for an additional 20 seconds. Finally, it will transition back to the Red state over the course of 3 seconds.
 
 ## External hardware
 
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+Three Different Color LEDs (Optional)
