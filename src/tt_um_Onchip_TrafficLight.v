@@ -142,6 +142,6 @@ always @* begin
 end
 
 
-    wire _unused = &{ui_in[7:1], 1'b0};
+    wire _unused = &{ui_in[7:1], OutVfreq[7], OutVfreq[5:0], 1'b0};
 
 endmodule

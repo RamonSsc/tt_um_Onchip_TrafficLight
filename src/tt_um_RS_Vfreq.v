@@ -12,9 +12,8 @@ module tt_um_RS_Vfreq(
     input  wire       rst_n     // reset_n - low to 
     );
     
-    wire reset = !rst_n; //use a positive logic reset
-    reg [7:0] counter = 0;
-    reg [6:0] second_counter = 8'b11111111;
+    reg [7:0] counter;
+    reg [6:0] second_counter;
     wire [7:0] comp;
     wire signal;
     //assign uio_oe[7:0] = 8'b11111111; //all bidirectional path used as outputs
@@ -26,7 +25,7 @@ module tt_um_RS_Vfreq(
     
     always @(posedge clk) begin
         // if reset, set principal path & counter to 0
-        if (reset) begin
+        if (!rst_n) begin
             counter <= 8'd0;
         end else begin
             if (signal) 
@@ -37,7 +36,7 @@ module tt_um_RS_Vfreq(
     end
     
     always @(posedge signal) begin
-        if (reset) begin
+        if (!rst_n) begin
             second_counter <= 7'd0;
         end else begin
             if (second_counter == ((2**7)-1)) 
@@ -47,5 +46,5 @@ module tt_um_RS_Vfreq(
         end
     end
 
-    wire _unused = &{ena, 1'b0};
+    wire _unused = &{ena, uio_in[7:0], 1'b0};
 endmodule
