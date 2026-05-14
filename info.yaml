@@ -1,6 +1,6 @@
 # Tiny Tapeout project information
 project:
-  title:        "UIS Traffic Light"      # Project title
+  title:        "Onchip-UIS Traffic Light"      # Project title
   author:       "Jorge Eduardo Angarita Pérez"      # Your name
   discord:      "zhord0326"      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
   description:  "Traffic light control"      # One line description of what your project does
