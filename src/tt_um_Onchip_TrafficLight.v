@@ -27,20 +27,25 @@ assign uio_oe[7:0] = 8'b11111111;                                        //Assig
 wire Start = ui_in[0];
 reg Red_Light, Yellow_Light, Green_Light;                           //Color Outputs
 
-assign uo_out[7:0] = {1'b0, Green_Light, {2{1'b0}}, Green_Light, {2{1'b0}}, Red_Light}; //Seven Segment Output dot G F E D C B A
+assign uo_out[7:0] = {1'b1, Yellow_Light, {2{1'b0}}, Green_Light, {2{1'b0}}, Red_Light}; //Seven Segment Output dot G F E D C B A
 assign uio_out[7:0] = {{5{1'b0}} , Red_Light, Yellow_Light, Green_Light};//Bidirectional Output
 
 reg Newclk_reg;
+reg start_reg; 
 
 always @(posedge clk) begin
-    if (!rst_n)
+    if (!rst_n) begin
         Newclk_reg <= 1'b0;
-    else
+        start_reg  <= 1'b0; 
+    end else begin
         Newclk_reg <= OutVfreq[6];
+        start_reg  <= Start;      
+    end
 end
 
 //Edge detector
 wire clk_enable = (OutVfreq[6] == 1'b1 && Newclk_reg == 1'b0);
+wire start_pulse = (Start == 1'b1 && start_reg == 1'b0);
 
 // State Definition
 parameter IDLE = 3'b000;                                            //Initial State
@@ -65,7 +70,7 @@ always @(posedge clk) begin
     if (!rst_n) begin
         state <= IDLE;                                              //Initial State
     end
-    else if (Start) begin
+    else if (start_pulse) begin
         state <= IDLE;                                              //Initial State
     end    
     else if (clk_enable) begin
@@ -114,7 +119,7 @@ always @(posedge clk) begin
     if (!rst_n) begin
         counter <= 6'd0;
     end 
-    else if (Start) begin
+    else if (start_pulse) begin
         counter <= 6'd0;
     end
     else if (clk_enable) begin
