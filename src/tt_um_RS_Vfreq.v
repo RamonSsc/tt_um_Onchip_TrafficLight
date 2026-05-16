@@ -22,24 +22,30 @@ module tt_um_RS_Vfreq(
     assign signal = counter >= comp; //compare the counter
     assign uio_out[7] = signal;
     assign uio_out[6:0] = second_counter;
+
+    //Principal signal used as rst and clk
+    assign counter_reset = signal;
+    assign counter_enable = signal; // Enable the second counter when the signal is high
     
     always @(posedge clk) begin
         // if reset, set principal path & counter to 0
         if (!rst_n) begin
             counter <= 8'd0;
-        end else begin
-            if (signal) 
+        end 
+        else begin
+            if (counter_reset) 
                 counter <= 8'd0;
             else 
                 counter <= counter + 1;
         end
     end
     
-    always @(posedge signal) begin
+    always @(posedge clk) begin
         if (!rst_n) begin
             second_counter <= 7'd0;
-        end else begin
-            if (second_counter == ((2**7)-1)) 
+        end 
+        else if (counter_enable) begin
+            if (second_counter == ((2**7)-1)) //127
                 second_counter <= 7'd0;
             else 
                 second_counter <= second_counter + 1;
