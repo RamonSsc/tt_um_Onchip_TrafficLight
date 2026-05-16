@@ -16,6 +16,7 @@ module tt_um_RS_Vfreq(
     reg [6:0] second_counter;
     wire [7:0] comp;
     wire signal;
+    wire counter_reset, counter_enable;
     //assign uio_oe[7:0] = 8'b11111111; //all bidirectional path used as outputs
     //assign uo_out[7:0] = 8'd0; //no 7-segment used
     assign comp = ui_in - 1;
