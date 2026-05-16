@@ -11,36 +11,28 @@ module tt_um_Onchip_TrafficLight(
 
 wire [7:0] freqSet = 8'b11111111;
 wire [7:0] OutVfreq;
+wire Newclk = OutVfreq[6]; 
  
 tt_um_RS_Vfreq Vfreq(
         .clk(clk),
         .ui_in(freqSet),
         .rst_n(rst_n),
+//        .uo_out(uo_outVfreq),                                     //Output not used due to synthesis failure.
         .uio_in(uio_in),
         .uio_out(OutVfreq),
+//        .uio_oe(uio_oeVfreq),                                     //Output not used due to synthesis failure.
         .ena(ena)
     );
 
-assign uio_oe[7:0] = 8'b11111111;                                        //Assign Output to evade synthesis problems
+assign uio_oe = 8'b11111111;                                        //Assign Output to evade synthesis problems
 
 //Real Inputs/Outputs
-wire Start = ui_in[0];
+wire Start;
 reg Red_Light, Yellow_Light, Green_Light;                           //Color Outputs
 
-assign uo_out[7:0] = {1'b0, Green_Light, {2{1'b0}}, Green_Light, {2{1'b0}}, Red_Light}; //Seven Segment Output dot G F E D C B A
-assign uio_out[7:0] = {{5{1'b0}} , Red_Light, Yellow_Light, Green_Light};//Bidirectional Output
-
-reg Newclk_reg;
-
-always @(posedge clk) begin
-    if (!rst_n)
-        Newclk_reg <= 1'b0;
-    else
-        Newclk_reg <= OutVfreq[6];
-end
-
-//Edge detector
-wire clk_enable = (OutVfreq[6] == 1'b1 && Newclk_reg == 1'b0);
+assign Start = ui_in[0];
+assign uo_out = {{5{1'b1}} , Red_Light, Yellow_Light, Green_Light}; //Seven Segment Output
+assign uio_out = {{5{1'b1}} , Red_Light, Yellow_Light, Green_Light};//Bidirectional Output
 
 // State Definition
 parameter IDLE = 3'b000;                                            //Initial State
@@ -58,23 +50,17 @@ parameter TIME_GREEN = 6'd20;
 reg [2:0] state, next_state;
 reg [5:0] counter;
 
-
-
 //FSM Logic
-always @(posedge clk) begin
-    if (!rst_n) begin
+always @(posedge Newclk or posedge Start) begin
+    if (Start) begin
         state <= IDLE;                                              //Initial State
-    end
-    else if (Start) begin
-        state <= IDLE;                                              //Initial State
-    end    
-    else if (clk_enable) begin
+    end else begin
         state <= next_state;                                        //State change every clock period
     end
 end
 
 //Next State Logic
-always @(*) begin
+always @* begin
     case(state)
         IDLE: begin
             next_state = RED;                                       //Change to RED    
@@ -86,7 +72,7 @@ always @(*) begin
                 next_state = RED;
         end
         RED2GREEN: begin
-            if(counter > TIME_RED + TIME_YELLOW)                      //Counter check for transition signal
+            if(counter > TIME_RED+TIME_YELLOW)                      //Counter check for transition signal
                 next_state = GREEN;
             else
                 next_state = RED2GREEN;       
@@ -110,25 +96,17 @@ always @(*) begin
 end
 
 //Current State Logic
-always @(posedge clk) begin
-    if (!rst_n) begin
-        counter <= 6'd0;
-    end 
-    else if (Start) begin
-        counter <= 6'd0;
-    end
-    else if (clk_enable) begin
-        if (counter <= TIME_RED + 6'd2*TIME_YELLOW + TIME_GREEN 
-            && (state == RED || state == RED2GREEN || state == GREEN || state == GREEN2RED)) begin
-            counter <= counter + 6'd1;                             //Initial State
-        end else begin
-            counter <= 6'd0;                                               //State change every clock period
-        end
+always @(posedge Newclk) begin
+    if (counter <= TIME_RED+2*TIME_YELLOW+TIME_GREEN 
+        & (state == RED | state == RED2GREEN | state == GREEN | state == GREEN2RED)) begin
+        counter <= counter + 6'b000001;                             //Initial State
+    end else begin
+        counter <= 0;                                               //State change every clock period
     end
 end
 
 //Output assign
-always @(*) begin
+always @* begin
     case(state)
         IDLE: begin
             Red_Light = 0;
